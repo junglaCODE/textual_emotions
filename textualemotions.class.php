@@ -17,8 +17,17 @@ include 'HtmlDomParser.php';
 use Sunra\PhpSimple\HtmlDomParser;
 
 class Textual_Emotions{
+
+    /*Url para la extracción de datos*/
     const __WEBSERVICE__ = 'http://www.frasescelebres.com';
 
+    
+     /**
+     * Función que extrae la frase del dia , si avatar se encuentra en TRUE
+     * extraera la imagen si es que la tiene, FALSE omite la extracción
+     * @param Boolean $avatar , default true
+     * @return Array
+     */
     static function getPhraseOfTheDay($avatar = true){
         $dom_ = HtmlDomParser::file_get_html(self::__WEBSERVICE__.'/frase-del-dia');
         foreach ($dom_->find("div[class=frase_autor]") as $_layer_): 
@@ -32,6 +41,14 @@ class Textual_Emotions{
         return  $avatar ? $_cita_ : array_slice($_cita_,1);
     }
     
+    /**
+    * Función que extrae las frases a partir de una frase, hace peticiones al modulo 
+    * buscar.php. si avatar se encuentra en TRUE extraera la imagen si es que la tiene,
+    * FALSE omite la extracción
+    * @param String $emotion , palabra a buscar
+    * @param Boolean $view , default 10 . ya que es lo que cotiene cada pagina
+    * @param Boolean $avatar , default true
+    */
     static function getPhrasesOfAnEmotion($emotion,$view=10,$avatar = true){
         $request = "/buscar.php?texto='{$emotion}'&pagina=1";
         $dom_ = HtmlDomParser::file_get_html(self::__WEBSERVICE__.$request);
@@ -51,12 +68,27 @@ class Textual_Emotions{
         return  $avatar ? $_cita_ : array_slice($_cita_,1);
     }
 
+    /**
+    * Función que te genera un template basico en Html para poder visualizar la información
+    * extraida de scrappin, la salida es una table;
+    *
+    *@param Array $struct , array('avatar'=>img,'pharse'=>string ,autor=>array(name,description))
+    *@return String 
+    */
     static function templateCardHtml($struct){
-      $widget = "<blockquote><img src='{$struct['avatar']}'>
-      <h2>{$struct['phrase']}</h2><h3>{$struct['author']['name']} -
-       <span>{$struct['author']['description']}</span></h3>
-      </blockquote>";
-     return $widget;
+        return  "<table>
+            <thead>
+             <tr>
+                <th> <img src='{$struct['avatar']}'> </th>
+                <th>
+                    <h3 style='text-align: left;'>{$struct['phrase']}</h3> 
+                    <h4 style='text-align: right;'>{$struct['author']['name']} 
+                    - <span style='color: gray;'>{$struct['author']['description']}
+                    </span></h4>
+                </th>
+                </tr>
+            <thead>
+        </table>";
     }
 
     private function existImageOfThePhrase__($layer){        
@@ -90,7 +122,9 @@ class Textual_Emotions{
 }
 //echo Textual_Emotions::totalOfEmotionPages('amor');
 //echo Textual_Emotions::templateCardHtml(Textual_Emotions::getPhraseOfTheDay());
-$frases = Textual_Emotions::getPhrasesOfAnEmotion('sencillo',3);
+$frases = Textual_Emotions::getPhrasesOfAnEmotion('derrota');
 foreach($frases as $cita):
     echo Textual_Emotions::templateCardHtml($cita);
 endforeach;
+
+
